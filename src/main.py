@@ -1,10 +1,12 @@
 import json
 import time
 import uasyncio
+from ota import *
+from settings import *
+from senko import Senko
 from hcsr04 import HCSR04
 from machine import Pin, reset
 from thingsboard import ThingsboardMQTTClient
-from settings import *
 
 __version__ = '0.0.1'
 __author__ = 'Iván Montiel Cardona'
@@ -15,6 +17,7 @@ sensor = HCSR04(trigger_pin=trigger, echo_pin=echo)
 # Pre-configuraciones del sistema
 current_level = 100
 manual = False  # Se desactiva por defecto el modo manual
+filling = False
 
 # Configuración del relay para la bomba de Agua
 water_pump = Pin(pump, Pin.OUT)
@@ -31,9 +34,13 @@ attributes = {
     'empty': False
 }
 
-
-# def get_gpio_status() -> str:
-#   return json.dumps(gpio_state)
+OTA = Senko(
+  user=git_user,
+  repo=git_repo,
+  branch=git_branch,
+  working_dir=wdir,
+  files=sysfiles
+)
 
 
 def on_message(topic, msg):
@@ -115,20 +122,37 @@ async def fill_container():
     Rutina asíncrona para el control de llenado del contenedor de agua
     :return:
     """
-    global current_level, attributes, manual
+    global current_level, attributes, manual, filling
     while True:
         if not manual:
             if attributes['empty']:
                 water_pump.on()
+                filling = True
             elif attributes['full']:
                 water_pump.off()
+                filling = False
         else:
             water_pump.on()
+            filling = True
             print(current_level)
             print(manual)
             if current_level > almost_full:
                 manual = False
+                filling = False
         await uasyncio.sleep(2)
+
+
+async def ota_service():
+    global OTA
+    while True:
+        if OTA.update() and not filling:
+            print('An update is available and it will be installed')
+            print('The system will reboot now')
+            print('Rebooting...')
+            time.sleep(5)
+            reset()
+        await uasyncio.sleep(3600)
+
 
 try:
     # Se inicia la conexión al broker

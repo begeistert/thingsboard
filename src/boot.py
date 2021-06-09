@@ -19,3 +19,5 @@ gc.collect()
 connection = network.WLAN(network.STA_IF)
 connection.active(True)
 connection.connect(ssid, password)
+
+
