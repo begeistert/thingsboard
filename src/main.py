@@ -151,6 +151,8 @@ async def ota_service():
             print('Rebooting...')
             time.sleep(5)
             reset()
+        else:
+            print("No system updates available")
         await uasyncio.sleep(3600)
 
 
@@ -168,6 +170,7 @@ event_loop = uasyncio.get_event_loop()
 event_loop.create_task(telemetry())
 event_loop.create_task(rpc())
 event_loop.create_task(fill_container())
+event_loop.create_task(ota_service())
 
 # Ejecución infinita
 event_loop.run_forever()
