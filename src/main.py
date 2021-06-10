@@ -153,7 +153,7 @@ async def ota_service():
             reset()
         else:
             print("No system updates available")
-        await uasyncio.sleep(3600)
+        await uasyncio.sleep(5)
 
 
 try:

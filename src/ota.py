@@ -1,6 +1,6 @@
 from settings import branch
 
-Version = "V0.0.1 Alpha 2"
+Version = "V0.0.1 Alpha 3"
 git_user = "begeistert"
 git_repo = "thingsboard"
 git_branch = "master" if branch is "stable" else "beta"
